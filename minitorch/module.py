@@ -31,11 +31,15 @@ class Module:
 
     def train(self) -> None:
         """Set the mode of this module and all descendent modules to `train`."""
-        raise NotImplementedError("Need to include this file from past assignment.")
+        self.training = True
+        for _, child in self._modules.items():
+            child.train()
 
     def eval(self) -> None:
         """Set the mode of this module and all descendent modules to `eval`."""
-        raise NotImplementedError("Need to include this file from past assignment.")
+        self.training = False
+        for _, child in self._modules.items():
+            child.eval()
 
     def named_parameters(self) -> Sequence[Tuple[str, Parameter]]:
         """Collect all the parameters of this module and its descendents.
@@ -45,11 +49,22 @@ class Module:
             The name and `Parameter` of each ancestor parameter.
 
         """
-        raise NotImplementedError("Need to include this file from past assignment.")
+        out: list[Tuple[str, Parameter]] = []
+
+        # Параметры текущего модуля (локальные имена)
+        for name, param in self._parameters.items():
+            out.append((name, param))
+
+        # Параметры дочерних модулей с префиксами "child_name.param_name"
+        for child_name, child in self._modules.items():
+            for sub_name, sub_param in child.named_parameters():
+                out.append((f"{child_name}.{sub_name}", sub_param))
+
+        return out
 
     def parameters(self) -> Sequence[Parameter]:
         """Enumerate over all the parameters of this module and its descendents."""
-        raise NotImplementedError("Need to include this file from past assignment.")
+        return [p for _, p in self.named_parameters()]
 
     def add_parameter(self, k: str, v: Any) -> Parameter:
         """Manually add a parameter. Useful helper for scalar parameters.
